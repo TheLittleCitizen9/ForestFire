@@ -8,19 +8,17 @@ namespace ForestFire
     {
         public int Health { get; set; }
         public TreeStatus TreeStatus { get; set; }
-        public Tree RelatedTo { get; set; }
         public event Action RelatedTrees;
 
         public Tree(int health, TreeStatus status, Tree relatedTo = null)
         {
             Health = health;
             TreeStatus = status;
-            RelatedTo = relatedTo;
         }
 
-        public void RelateToTree()
+        public void RelateToTree(Tree relatedTree)
         {
-            RelatedTo.RelatedTrees += ChangeStatus;
+            relatedTree.RelatedTrees += ChangeStatus;
         }
 
         public void ChangeTreeStatus()
