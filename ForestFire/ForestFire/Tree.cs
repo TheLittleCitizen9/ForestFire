@@ -9,16 +9,18 @@ namespace ForestFire
         public int Health { get; set; }
         public TreeStatus TreeStatus { get; set; }
         public event Action RelatedTrees;
+        public TreeStatus NextTreeStatus { get; set; }
 
         public Tree(int health, TreeStatus status, Tree relatedTo = null)
         {
             Health = health;
             TreeStatus = status;
+            NextTreeStatus = status;
         }
 
         public void RelateToTree(Tree relatedTree)
         {
-            relatedTree.RelatedTrees += ChangeStatus;
+            relatedTree.RelatedTrees += BurnTree;
         }
 
         public void ChangeTreeStatus()
@@ -28,31 +30,34 @@ namespace ForestFire
 
         public void BurnTree()
         {
-            TreeStatus = TreeStatus.Burning;
-            Health--;
-            if(Health == 0)
-            {
-                TreeStatus = TreeStatus.Dead;
-            }
+            if(NextTreeStatus == TreeStatus.Healthy)
+                NextTreeStatus = TreeStatus.Burning;
         }
 
-        public void ChangeStatus()
+        public void KillTree()
         {
-            switch (TreeStatus)
+            Health = 0;
+            TreeStatus = TreeStatus.Dead;
+        }
+
+       public void UpdateTreeStatus()
+        {
+            TreeStatus = NextTreeStatus;
+        }
+
+        public void TreeLifeCycle()
+        {
+            if(TreeStatus == TreeStatus.Burning)
             {
-                case TreeStatus.Healthy:
-                    BurnTree();
-                    break;
-                case TreeStatus.Burning:
-                    if(Health == 0)
-                    {
-                        TreeStatus = TreeStatus.Dead;
-                    }
-                    break;
-                case TreeStatus.Dead:
-                    break;
-                default:
-                    break;
+                if(Health == 0)
+                {
+                    NextTreeStatus = TreeStatus.Dead;
+                }
+                else
+                {
+                    Health--;
+                }
+                ChangeTreeStatus();
             }
         }
     }

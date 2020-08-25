@@ -6,8 +6,8 @@ namespace ForestFire
 {
     public enum TreeStatus
     {
-        Healthy,
-        Burning,
-        Dead
+        Healthy='O',
+        Burning='X',
+        Dead='.'
     }
 }

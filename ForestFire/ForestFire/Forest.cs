@@ -12,53 +12,34 @@ namespace ForestFire
     {
         public char[,] ForestDisplayer;
         public Tree[,] ForestTreeStatus;
+        private int _chance;
 
-        public Forest(int row, int col)
+        public Forest(int row, int col, int chance, int health)
         {
             ForestDisplayer = new char[row, col];
             ForestTreeStatus = new Tree[row, col];
-            GenerateForest();
-        }
-
-        public void InitTimer(int interval)
-        {
-            System.Timers.Timer timer = new System.Timers.Timer(interval);
-            timer.AutoReset = true; // the key is here so it repeats
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimeEvent);
-            timer.Start();
-        }
-
-        private void OnTimeEvent(object obj, ElapsedEventArgs e)
-        {
-            PrintForest();
+            GenerateForest(health);
+            _chance = chance;
         }
 
         public void Main(int interval)
         {
-
-        }
-
-        public void CreateTree(Tree tree)
-        {
-            for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
+            while(true)
             {
-                for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
-                {
-                    if(ForestTreeStatus[i, j] == null)
-                    {
-                        ForestTreeStatus[i, j] = tree;
-                    }
-                }
+                PrintForest();
+                RunForestFlow();
+                
+                Thread.Sleep(interval);
             }
         }
 
         public void PrintForest()
         {
-            for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
+            for (int i = 0; i < ForestTreeStatus.GetLength(0); i++)
             {
-                for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
+                for (int j = 0; j < ForestTreeStatus.GetLength(1); j++)
                 {
-                    Console.Write(ForestDisplayer[i, j] + "\t");
+                    Console.Write((char)ForestTreeStatus[i, j].TreeStatus + "\t");
                 }
                 Console.WriteLine();
             }
@@ -68,87 +49,60 @@ namespace ForestFire
         public void BurnTree(int row, int col)
         {
             ForestTreeStatus[row, col].BurnTree();
-            ForestDisplayer[row, col] = 'X';
-            ForestTreeStatus[row, col].ChangeTreeStatus();
         }
 
         public void KillTree(int row, int col)
         {
-            ForestTreeStatus[row, col].TreeStatus = TreeStatus.Dead;
-            ForestDisplayer[row, col] = '.';
+            ForestTreeStatus[row, col].KillTree();
         }
 
-        public void CreateConnections(int chance)
+        public void CreateConnections()
         {
             for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
             {
                 for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
                 {
-                    if(IsConnectionCreated(chance))
+                    if(IsConnectionCreated(_chance))
                     {
-                        if(i!= 0 && i!= ForestDisplayer.GetLength(0) && j!= 0 && j!= ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else if(i == 0 && j!=0 && j!= ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else if(i!=0 && i!=ForestDisplayer.GetLength(0) && j==0 && j!=ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else if(i!=0 && i!=ForestDisplayer.GetLength(0) && j!=0 && j== ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else if(i!=0 && i==ForestDisplayer.GetLength(0) && j!=0 && j!=ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                        }
-                        else if(i == 0 && j == 0)
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else if(i == ForestDisplayer.GetLength(0) && j == ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                        }
-                        else if(i == 0 && j == ForestDisplayer.GetLength(1))
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j - 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i + 1, j]);
-                        }
-                        else
-                        {
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i, j + 1]);
-                            ForestTreeStatus[i, j].RelateToTree(ForestTreeStatus[i - 1, j]);
-                        }
+                        if (i != 0)
+                            ForestTreeStatus[i-1, j].RelateToTree(ForestTreeStatus[i, j]);
+                        if (i != ForestDisplayer.GetLength(0) - 1)
+                            ForestTreeStatus[i + 1, j].RelateToTree(ForestTreeStatus[i, j]);
+                        if (j != 0)
+                            ForestTreeStatus[i, j - 1].RelateToTree(ForestTreeStatus[i, j]);
+                        if (j != ForestDisplayer.GetLength(1) - 1)
+                            ForestTreeStatus[i, j + 1].RelateToTree(ForestTreeStatus[i, j]);
                     }
                 }
             }
         }
-
-        private void GenerateForest()
+        public void RunForestFlow()
         {
+            for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
+            {
+                for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
+                {
+                   ForestTreeStatus[i,j].TreeLifeCycle();
+                }
+            }
+            for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
+            {
+                for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
+                {
+                    ForestTreeStatus[i, j].UpdateTreeStatus();
+                }
+            }
+        }
+
+        private void GenerateForest(int health)
+        {
+            Random random = new Random();
             for (int i = 0; i < ForestDisplayer.GetLength(0); i++)
             {
                 for (int j = 0; j < ForestDisplayer.GetLength(1); j++)
                 {
                     ForestDisplayer[i, j] = 'O';
+                    ForestTreeStatus[i, j] = new Tree(health, TreeStatus.Healthy);
                 }
             }
         }
